@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnam Draft Simulator: 1970 Lottery</title>
+    <style>
+        /* * ==========================================
+         * TEACHER / DEVELOPER STYLES
+         * Modify colors and fonts here.
+         * ==========================================
+         */
+        :root {
+            --bg-color: #e5e0d8; /* Manila folder background */
+            --paper-color: #f4f1ea;
+            --text-color: #2b2b2b;
+            --olive-drab: #4b5320;
+            --muted-red: #8b2b2b;
+            --faded-green: #5c6b4b;
+            --stamp-red: #c1272d;
+            --stamp-green: #38761d;
+            --border-color: #c4bcae;
+            --typewriter-font: 'Courier New', Courier, monospace;
+            --body-font: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--body-font);
+            line-height: 1.6;
+            padding: 20px;
+            background-image: radial-gradient(#d5d0c8 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--paper-color);
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 2px 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle aesthetic touches */
+        .container::before {
+            content: "SELECTIVE SERVICE SYSTEM";
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: var(--typewriter-font);
+            font-size: 0.8rem;
+            color: #a39c8f;
+            letter-spacing: 2px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+            border-bottom: 2px solid var(--text-color);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Arial Black', Impact, sans-serif;
+            text-transform: uppercase;
+            font-size: 2.2rem;
+            color: var(--olive-drab);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+            color: #444;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* Form Styles */
+        .input-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            font-family: var(--typewriter-font);
+            font-size: 1.1rem;
+            padding: 10px 15px;
+            border: 2px solid var(--text-color);
+            background: transparent;
+            outline: none;
+        }
+
+        select {
+            cursor: pointer;
+            background-color: #fff;
+        }
+
+        button {
+            background-color: var(--olive-drab);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background-color: var(--text-color);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: var(--muted-red);
+            font-family: var(--typewriter-font);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* Loading Animation */
+        #loading-section {
+            text-align: center;
+            padding: 40px 0;
+            font-family: var(--typewriter-font);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--olive-drab);
+            display: none;
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+
+        /* Results Section */
+        #result-section {
+            display: none;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dossier-card {
+            border: 2px dashed var(--text-color);
+            padding: 25px;
+            margin-bottom: 25px;
+            position: relative;
+            background-color: #faf8f5;
+        }
+
+        .dossier-header {
+            font-family: var(--typewriter-font);
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .number-display {
+            font-size: 4rem;
+            font-family: var(--typewriter-font);
+            text-align: center;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--text-color);
+        }
+
+        /* Stamps */
+        .stamp {
+            font-family: 'Arial Black', Impact, sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            border: 4px solid;
+            padding: 5px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            transform: rotate(-10deg);
+            opacity: 0.8;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            pointer-events: none;
+        }
+
+        .stamp.called {
+            color: var(--stamp-red);
+            border-color: var(--stamp-red);
+        }
+
+        .stamp.safe {
+            color: var(--stamp-green);
+            border-color: var(--stamp-green);
+        }
+
+        /* Result details */
+        .result-details {
+            margin-top: 20px;
+            font-family: var(--typewriter-font);
+        }
+
+        .result-row {
+            margin-bottom: 10px;
+            display: flex;
+        }
+
+        .result-label {
+            font-weight: bold;
+            width: 150px;
+            flex-shrink: 0;
+        }
+
+        .scenario-text {
+            font-family: var(--body-font);
+            font-size: 1.1rem;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(0,0,0,0.03);
+            border-left: 4px solid var(--olive-drab);
+        }
+
+        /* Risk Bar */
+        .risk-bar-container {
+            margin: 30px 0;
+        }
+
+        .risk-bar-title {
+            font-family: var(--typewriter-font);
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .risk-bar {
+            display: flex;
+            height: 30px;
+            width: 100%;
+            border: 1px solid var(--text-color);
+        }
+
+        .segment {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--typewriter-font);
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .seg-low { width: 17.7%; background-color: #8b0000; } /* 1-65 */
+        .seg-mid { width: 17.7%; background-color: #b84d00; } /* 66-130 */
+        .seg-high { width: 17.7%; background-color: #d19a00; color: black; text-shadow: none;} /* 131-195 */
+        .seg-safe { width: 46.9%; background-color: #4b6b3e; } /* 196-366 */
+
+        /* Accordions / Drawers */
+        .accordion {
+            background-color: #e8e4dc;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--border-color);
+            outline: none;
+            font-family: var(--typewriter-font);
+            font-weight: bold;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .accordion:hover {
+            background-color: #dcd7cd;
+        }
+
+        .accordion:after {
+            content: '\02795'; /* Plus sign */
+            font-size: 13px;
+            float: right;
+            margin-left: 5px;
+        }
+
+        .accordion.active:after {
+            content: "\2796"; /* Minus sign */
+        }
+
+        .panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .panel-content {
+            padding: 15px 0;
+            font-size: 0.95rem;
+        }
+        
+        .panel-content strong {
+            color: var(--olive-drab);
+        }
+
+        /* Classroom Mode */
+        #classroom-mode-btn {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px dashed var(--text-color);
+            font-size: 0.9rem;
+            margin-top: 40px;
+            width: 100%;
+        }
+
+        #classroom-table {
+            display: none;
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: collapse;
+            font-family: var(--typewriter-font);
+            font-size: 0.9rem;
+        }
+
+        #classroom-table th, #classroom-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+        }
+
+        #classroom-table th {
+            background-color: var(--olive-drab);
+            color: white;
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #666;
+            font-family: var(--typewriter-font);
+            border-top: 1px dashed var(--border-color);
+            padding-top: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .input-group { flex-direction: column; }
+            select, button { width: 100%; }
+            .stamp { font-size: 1.8rem; top: 10px; right: 10px; }
+            .result-row { flex-direction: column; margin-bottom: 15px; }
+            .result-label { width: auto; margin-bottom: 2px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Vietnam Draft Simulator</h1>
+        <h2>1970 Selective Service Lottery</h2>
+        <p class="intro-text" style="margin-top: 10px;">
+            On December 1, 1969, the U.S. government held the first draft lottery since WWII. 
+            366 birth dates were drawn at random to determine the order men born between 1944 and 1950 would be called to serve in Vietnam.
+        </p>
+    </header>
+
+    <main>
+        <!-- INPUT SECTION -->
+        <section id="input-section">
+            <p style="text-align: center; font-family: var(--typewriter-font); font-weight: bold;">
+                ENTER YOUR BIRTHDAY TO FIND YOUR HISTORICAL FILE:
+            </p>
+            <div class="error-message" id="error-msg">Invalid date selected. Please try again.</div>
+            <div class="input-group">
+                <select id="month-select">
+                    <option value="" disabled selected>-- MONTH --</option>
+                    <option value="JAN">January</option>
+                    <option value="FEB">February</option>
+                    <option value="MAR">March</option>
+                    <option value="APR">April</option>
+                    <option value="MAY">May</option>
+                    <option value="JUN">June</option>
+                    <option value="JUL">July</option>
+                    <option value="AUG">August</option>
+                    <option value="SEP">September</option>
+                    <option value="OCT">October</option>
+                    <option value="NOV">November</option>
+                    <option value="DEC">December</option>
+                </select>
+
+                <select id="day-select">
+                    <option value="" disabled selected>-- DAY --</option>
+                    <!-- Days injected by JS -->
+                </select>
+
+                <button id="run-btn" onclick="runSimulation()">Run My Draft Result</button>
+            </div>
+        </section>
+
+        <!-- LOADING SECTION -->
+        <section id="loading-section">
+            <p id="loading-text">SEARCHING CLASSIFIED RECORDS<span class="blink">...</span></p>
+        </section>
+
+        <!-- RESULTS SECTION -->
+        <section id="result-section">
+            <div class="dossier-card">
+                <div class="dossier-header">
+                    <span>FILE: <span id="res-date">--</span></span>
+                    <span>STATUS: 1970 REVIEW</span>
+                </div>
+                
+                <div id="stamp-container" class="stamp">--</div>
+
+                <p style="text-align: center; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;">
+                    Official Draft Lottery Number
+                </p>
+                <div class="number-display" id="res-number">000</div>
+
+                <div class="result-details" id="military-details" style="display: none;">
+                    <div class="result-row">
+                        <div class="result-label">Assigned Branch:</div>
+                        <div id="res-branch">--</div>
+                    </div>
+                    <div class="result-row">
+                        <div class="result-label">Primary MOS (Job):</div>
+                        <div id="res-job">--</div>
+                    </div>
+                    <div class="result-row">
+                        <div class="result-label">Likely Deployment:</div>
+                        <div id="res-deployment">--</div>
+                    </div>
+                    <div class="result-row">
+                        <div class="result-label">Danger Level:</div>
+                        <div id="res-danger" style="font-weight: bold;">--</div>
+                    </div>
+                </div>
+
+                <div class="scenario-text" id="res-scenario">
+                    <!-- Scenario text injected here -->
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="resetSimulator()">Try Another Birthday</button>
+            </div>
+        </section>
+
+        <!-- RISK BAR SECTION -->
+        <section class="risk-bar-container">
+            <div class="risk-bar-title">1970 INDUCTION PROBABILITY METER</div>
+            <div class="risk-bar">
+                <div class="segment seg-low" title="1-65: Highly likely to be called immediately">1-65</div>
+                <div class="segment seg-mid" title="66-130: Called up shortly after the first wave">66-130</div>
+                <div class="segment seg-high" title="131-195: The historical 1970 cutoff zone">131-195</div>
+                <div class="segment seg-safe" title="196-366: Safe from the draft in 1970">196-366 (NOT CALLED)</div>
+            </div>
+            <p style="text-align: center; font-size: 0.85rem; margin-top: 5px; color: #555;">
+                Numbers 1-195 were officially called for induction in 1970.
+            </p>
+        </section>
+
+        <!-- HISTORICAL CONTEXT -->
+        <section id="context-section">
+            <button class="accordion">Historical Context: Why this matters</button>
+            <div class="panel">
+                <div class="panel-content">
+                    <p><strong>What was the draft lottery?</strong><br>
+                    To make the draft seem more fair, the US used a televised lottery. 366 plastic capsules, each containing a birth date, were mixed in a glass container and drawn by hand.</p><br>
+                    
+                    <p><strong>Did everyone with a low number serve?</strong><br>
+                    No. While a low number meant you were called, many men received deferments (for college, essential jobs, or hardship), failed the physical/medical exams, or found other legal (and sometimes illegal) ways to avoid serving.</p><br>
+                    
+                    <p><strong>Why weren't high numbers drafted?</strong><br>
+                    The military only needed a certain number of soldiers each year. Once they met their quota by drafting the lowest numbers (up to 195 in 1970), they stopped calling people.</p><br>
+
+                    <p><strong>How accurate is this simulation?</strong><br>
+                    The lottery number for your birthday is a <strong>historical fact</strong>. However, the exact branch, job, and deployment shown above are a <strong>classroom simulation</strong>. They are based on realistic percentages of where men were assigned during the war, but individual outcomes varied wildly based on skills, test scores, and timing.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CLASSROOM DEMO MODE -->
+        <button id="classroom-mode-btn" onclick="toggleClassroomMode()">Teacher Demo: Show Sample Dates</button>
+        <table id="classroom-table">
+            <thead>
+                <tr>
+                    <th>Birthday</th>
+                    <th>Draft #</th>
+                    <th>1970 Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>September 14</td><td>1</td><td>Called (First drawn)</td></tr>
+                <tr><td>April 24</td><td>2</td><td>Called</td></tr>
+                <tr><td>December 30</td><td>3</td><td>Called</td></tr>
+                <tr><td>July 9</td><td>277</td><td>Not Called (Safe)</td></tr>
+                <tr><td>June 8</td><td>366</td><td>Not Called (Last drawn)</td></tr>
+            </tbody>
+        </table>
+
+    </main>
+
+    <footer>
+        <p>FOR EDUCATIONAL CLASSROOM USE ONLY</p>
+        <p>Lottery Data: Actual 1970 US Selective Service Records | Military Paths: Simulated based on historical distributions</p>
+    </footer>
+</div>
+
+<!-- 
+ * ==========================================
+ * TEACHER / DEVELOPER JAVASCRIPT LOGIC
+ * ==========================================
+-->
+<script>
+    // --- 1. HISTORICAL DRAFT DATA (Do not modify) ---
+    const draftData = {
+        "JAN": { 1:305, 2:159, 3:251, 4:215, 5:101, 6:224, 7:306, 8:199, 9:194, 10:325, 11:329, 12:221, 13:318, 14:238, 15:17, 16:121, 17:235, 18:140, 19:58, 20:280, 21:186, 22:337, 23:118, 24:59, 25:52, 26:92, 27:355, 28:77, 29:349, 30:164, 31:211 },
+        "FEB": { 1:86, 2:144, 3:297, 4:210, 5:214, 6:347, 7:91, 8:181, 9:338, 10:216, 11:150, 12:68, 13:152, 14:4, 15:89, 16:212, 17:189, 18:292, 19:25, 20:302, 21:363, 22:290, 23:57, 24:236, 25:179, 26:365, 27:205, 28:299, 29:285 },
+        "MAR": { 1:108, 2:29, 3:267, 4:275, 5:293, 6:139, 7:122, 8:213, 9:317, 10:323, 11:136, 12:300, 13:259, 14:354, 15:169, 16:166, 17:33, 18:332, 19:200, 20:239, 21:334, 22:265, 23:256, 24:258, 25:343, 26:170, 27:268, 28:223, 29:362, 30:217, 31:30 },
+        "APR": { 1:32, 2:271, 3:83, 4:81, 5:269, 6:253, 7:147, 8:312, 9:219, 10:218, 11:14, 12:346, 13:124, 14:231, 15:273, 16:148, 17:260, 18:90, 19:336, 20:345, 21:62, 22:316, 23:252, 24:2, 25:351, 26:340, 27:74, 28:262, 29:191, 30:208 },
+        "MAY": { 1:330, 2:298, 3:40, 4:276, 5:364, 6:155, 7:35, 8:321, 9:197, 10:65, 11:37, 12:133, 13:295, 14:178, 15:130, 16:55, 17:112, 18:278, 19:75, 20:183, 21:250, 22:326, 23:319, 24:31, 25:361, 26:357, 27:296, 28:308, 29:226, 30:103, 31:313 },
+        "JUN": { 1:249, 2:228, 3:301, 4:20, 5:28, 6:110, 7:85, 8:366, 9:335, 10:206, 11:134, 12:272, 13:69, 14:356, 15:180, 16:274, 17:73, 18:341, 19:104, 20:360, 21:60, 22:247, 23:109, 24:358, 25:137, 26:22, 27:64, 28:222, 29:353, 30:209 },
+        "JUL": { 1:93, 2:350, 3:115, 4:279, 5:188, 6:327, 7:50, 8:13, 9:277, 10:284, 11:248, 12:15, 13:42, 14:331, 15:322, 16:120, 17:98, 18:190, 19:227, 20:187, 21:27, 22:153, 23:172, 24:23, 25:67, 26:303, 27:289, 28:88, 29:270, 30:287, 31:193 },
+        "AUG": { 1:111, 2:45, 3:261, 4:145, 5:54, 6:114, 7:168, 8:48, 9:106, 10:21, 11:324, 12:142, 13:307, 14:198, 15:102, 16:44, 17:154, 18:141, 19:311, 20:344, 21:291, 22:339, 23:116, 24:36, 25:286, 26:245, 27:352, 28:167, 29:61, 30:333, 31:11 },
+        "SEP": { 1:225, 2:161, 3:49, 4:232, 5:82, 6:6, 7:8, 8:184, 9:263, 10:71, 11:158, 12:242, 13:175, 14:1, 15:113, 16:207, 17:255, 18:246, 19:177, 20:63, 21:204, 22:160, 23:119, 24:195, 25:149, 26:18, 27:233, 28:257, 29:151, 30:315 },
+        "OCT": { 1:359, 2:125, 3:244, 4:202, 5:24, 6:87, 7:234, 8:283, 9:342, 10:220, 11:237, 12:72, 13:138, 14:294, 15:171, 16:254, 17:288, 18:5, 19:241, 20:192, 21:243, 22:117, 23:201, 24:196, 25:176, 26:7, 27:264, 28:94, 29:229, 30:38, 31:79 },
+        "NOV": { 1:19, 2:34, 3:348, 4:266, 5:310, 6:76, 7:51, 8:97, 9:80, 10:282, 11:46, 12:66, 13:126, 14:127, 15:131, 16:107, 17:143, 18:146, 19:203, 20:185, 21:156, 22:9, 23:182, 24:230, 25:132, 26:309, 27:47, 28:281, 29:99, 30:174 },
+        "DEC": { 1:129, 2:328, 3:157, 4:165, 5:56, 6:10, 7:12, 8:105, 9:43, 10:41, 11:39, 12:314, 13:163, 14:26, 15:320, 16:96, 17:304, 18:128, 19:240, 20:135, 21:70, 22:53, 23:162, 24:95, 25:84, 26:173, 27:78, 28:123, 29:16, 30:3, 31:100 }
+    };
+
+    // --- 2. SIMULATION DATA (Teachers can adjust odds here) ---
+    // Branch chances (must total 100)
+    const branchWeights = {
+        "Army": 70,
+        "Marine Corps": 12,
+        "Navy": 8,
+        "Air Force": 5,
+        "National Guard / Reserve": 5
+    };
+
+    const jobsData = {
+        "Army": ["Infantryman", "Rifleman", "Radio operator", "Medic", "Truck driver", "Combat engineer", "Artillery crewman", "Supply clerk", "Mechanic"],
+        "Marine Corps": ["Rifleman", "Machine gun crew", "Radio operator", "Combat support", "Logistics support"],
+        "Navy": ["Shipboard technician", "Deck crew", "Corpsman (Medic)", "Supply/logistics", "Communications specialist"],
+        "Air Force": ["Aircraft mechanic", "Cargo/logistics", "Communications specialist", "Airbase support", "Medical support"],
+        "National Guard / Reserve": ["Stateside logistics", "Administrative support", "Base mechanic", "Supply operations"]
+    };
+
+    // Deployment odds by branch (must total 100 for each)
+    const deploymentData = {
+        "Army": { "Vietnam combat zone": 60, "Vietnam support base": 15, "Okinawa / Pacific staging base": 10, "West Germany": 8, "Korea": 4, "Stateside base": 3 },
+        "Marine Corps": { "Vietnam combat zone": 60, "Vietnam support base": 15, "Okinawa / Pacific staging base": 10, "West Germany": 8, "Korea": 4, "Stateside base": 3 },
+        "Navy": { "Offshore / carrier support in Pacific": 45, "Vietnam coastal support": 20, "Okinawa / Philippines base": 20, "Stateside naval station": 15 },
+        "Air Force": { "Thailand / Pacific airbase": 30, "Vietnam airbase": 25, "Okinawa / Guam": 20, "Stateside base": 15, "West Germany": 10 },
+        "National Guard / Reserve": { "Stateside base (Protected)": 100 }
+    };
+
+    // --- 3. HELPER FUNCTIONS ---
+    // Initialize day dropdown
+    const daySelect = document.getElementById('day-select');
+    for (let i = 1; i <= 31; i++) {
+        let option = document.createElement('option');
+        option.value = i;
+        option.text = i;
+        daySelect.appendChild(option);
+    }
+
+    // Accordion Logic
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            let panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            }
+        });
+    }
+
+    // Weighted Random Selector
+    function getWeightedRandom(weights) {
+        let sum = 0;
+        for (let key in weights) { sum += weights[key]; }
+        let rand = Math.random() * sum;
+        for (let key in weights) {
+            rand -= weights[key];
+            if (rand <= 0) return key;
+        }
+    }
+
+    // Random Array Item Selector
+    function getRandomItem(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // Determine Danger Level
+    function calculateDanger(branch, job, deployment) {
+        const highRiskJobs = ["Infantryman", "Rifleman", "Machine gun crew", "Medic", "Combat engineer", "Artillery crewman"];
+        if (deployment.includes("combat zone")) {
+            if (highRiskJobs.includes(job)) return "<span style='color: #8b0000;'>Very High (Frontline Combat)</span>";
+            return "<span style='color: #b84d00;'>High (Combat Zone)</span>";
+        }
+        if (deployment.includes("Vietnam support") || deployment.includes("coastal support")) {
+            return "<span style='color: #d19a00;'>Moderate (In-Country Support)</span>";
+        }
+        if (deployment.includes("Pacific") || deployment.includes("Thailand") || deployment.includes("Okinawa")) {
+            return "<span style='color: #5c6b4b;'>Lower (Overseas Support)</span>";
+        }
+        return "<span style='color: #38761d;'>Lowest (Stateside/Europe)</span>";
+    }
+
+    // Generate Paragraph
+    function generateNarrative(isDrafted, number, branch, job, deployment) {
+        if (!isDrafted) {
+            return `Your birthday drew Lottery Number <strong>${number}</strong>. That was well above the 1970 induction cutoff of 195, so you likely would <strong>not</strong> have been drafted that year.<br><br>
+            Instead of military service, your civilian path—whether college, a trade, or starting a family—would continue. However, the Vietnam War would still cast a shadow over your world. You would watch the news, see the protests, and worry about friends or classmates who drew lower numbers and were sent overseas.`;
+        }
+
+        let narrative = `Your birthday drew Lottery Number <strong>${number}</strong>. That falls inside the 1970 induction range (1-195). You likely would have been called for military service, assuming you passed the physical exam and did not have a deferment (like being in college).<br><br>`;
+        
+        narrative += `Based on typical historical assignments, you were likely inducted into the <strong>${branch}</strong> and trained as a <strong>${job.toLowerCase()}</strong>. `;
+        
+        if (branch === "National Guard / Reserve") {
+            narrative += `By joining the Guard or Reserves, you likely avoided deployment to Vietnam, remaining stateside for training and domestic duties. This was a highly sought-after, protected path during the war.`;
+        } else if (deployment.includes("Vietnam") || deployment.includes("Thailand") || deployment.includes("carrier")) {
+            narrative += `Your records suggest a strong chance of deployment to <strong>${deployment}</strong>. Your daily life would involve long hours, challenging tropical conditions, and the ever-present realities of a complex, dangerous conflict.`;
+        } else {
+            narrative += `Your records suggest assignment to <strong>${deployment}</strong>. While you avoided the combat zone in Southeast Asia, you were still a vital part of the Cold War military apparatus, ready to deploy if global tensions escalated.`;
+        }
+
+        return narrative;
+    }
+
+    // --- 4. MAIN APPLICATION FLOW ---
+    function validateDate(month, day) {
+        const daysInMonth = { "JAN":31, "FEB":29, "MAR":31, "APR":30, "MAY":31, "JUN":30, "JUL":31, "AUG":31, "SEP":30, "OCT":31, "NOV":30, "DEC":31 };
+        if (!month || !day) return false;
+        if (day > daysInMonth[month]) return false;
+        return true;
+    }
+
+    function runSimulation() {
+        const month = document.getElementById('month-select').value;
+        const day = parseInt(document.getElementById('day-select').value);
+        const errorMsg = document.getElementById('error-msg');
+        
+        // 1. Validation
+        if (!validateDate(month, day)) {
+            errorMsg.style.display = 'block';
+            if (month) {
+                errorMsg.innerText = `Invalid date: ${month} only has ${["APR","JUN","SEP","NOV"].includes(month) ? 30 : (month==="FEB" ? 29 : 31)} days.`;
+            } else {
+                errorMsg.innerText = "Please select both a month and a day.";
+            }
+            return;
+        }
+        errorMsg.style.display = 'none';
+
+        // 2. Fetch Historical Number
+        const draftNumber = draftData[month][day];
+        const isDrafted = draftNumber <= 195;
+
+        // 3. UI Transitions
+        document.getElementById('input-section').style.display = 'none';
+        document.getElementById('loading-section').style.display = 'block';
+        
+        const loadText = document.getElementById('loading-text');
+        loadText.innerHTML = 'SEARCHING CLASSIFIED RECORDS<span class="blink">...</span>';
+
+        setTimeout(() => {
+            loadText.innerHTML = 'LOTTERY NUMBER ASSIGNED<span class="blink">...</span>';
+            
+            setTimeout(() => {
+                // Hide loader, show results
+                document.getElementById('loading-section').style.display = 'none';
+                document.getElementById('result-section').style.display = 'block';
+                
+                // Populate Results
+                document.getElementById('res-date').innerText = `${month} ${day}`;
+                document.getElementById('res-number').innerText = draftNumber;
+
+                const stamp = document.getElementById('stamp-container');
+                const detailsBox = document.getElementById('military-details');
+                
+                if (isDrafted) {
+                    stamp.innerText = "CALLED";
+                    stamp.className = "stamp called";
+                    detailsBox.style.display = "block";
+
+                    // Generate Simulation
+                    const branch = getWeightedRandom(branchWeights);
+                    const job = getRandomItem(jobsData[branch]);
+                    const deployment = getWeightedRandom(deploymentData[branch]);
+                    const danger = calculateDanger(branch, job, deployment);
+
+                    document.getElementById('res-branch').innerText = branch;
+                    document.getElementById('res-job').innerText = job;
+                    document.getElementById('res-deployment').innerText = deployment;
+                    document.getElementById('res-danger').innerHTML = danger;
+
+                    document.getElementById('res-scenario').innerHTML = generateNarrative(true, draftNumber, branch, job, deployment);
+                } else {
+                    stamp.innerText = "NOT CALLED";
+                    stamp.className = "stamp safe";
+                    detailsBox.style.display = "none";
+                    
+                    document.getElementById('res-scenario').innerHTML = generateNarrative(false, draftNumber, null, null, null);
+                }
+
+            }, 1200); // 1.2s delay for realism
+        }, 1200); // 1.2s delay for realism
+    }
+
+    function resetSimulator() {
+        document.getElementById('result-section').style.display = 'none';
+        document.getElementById('input-section').style.display = 'block';
+        document.getElementById('month-select').value = "";
+        document.getElementById('day-select').value = "";
+    }
+
+    function toggleClassroomMode() {
+        const table = document.getElementById('classroom-table');
+        if (table.style.display === 'none' || table.style.display === '') {
+            table.style.display = 'table';
+        } else {
+            table.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
