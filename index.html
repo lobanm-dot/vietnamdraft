@@ -246,6 +246,23 @@
             border-left: 4px solid var(--olive-drab);
         }
 
+        /* What If Box */
+        .what-if-box {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #e8e4dc;
+            border: 1px solid var(--border-color);
+            font-family: var(--body-font);
+            font-size: 1rem;
+        }
+
+        .what-if-box ul {
+            list-style-type: square;
+            margin-left: 20px;
+            margin-top: 10px;
+            font-family: var(--typewriter-font);
+        }
+
         /* Risk Bar */
         .risk-bar-container {
             margin: 30px 0;
@@ -468,6 +485,15 @@
                 <div class="scenario-text" id="res-scenario">
                     <!-- Scenario text injected here -->
                 </div>
+
+                <div class="what-if-box" id="what-if-box">
+                    <h3 style="font-family: var(--typewriter-font); margin-bottom: 5px; font-size: 1rem; color: var(--muted-red);">THE RANDOMNESS OF FATE</h3>
+                    <p>If you had been born just one day earlier or later, your outcome could have been entirely different:</p>
+                    <ul>
+                        <li>Born <strong><span id="prev-date-text">--</span></strong>: Number <span id="prev-number-text">--</span> &rarr; <strong id="prev-status-text">--</strong></li>
+                        <li>Born <strong><span id="next-date-text">--</span></strong>: Number <span id="next-number-text">--</span> &rarr; <strong id="next-status-text">--</strong></li>
+                    </ul>
+                </div>
             </div>
 
             <div style="text-align: center; margin-top: 20px;">
@@ -663,6 +689,16 @@
         return narrative;
     }
 
+    // --- 3.5. CHRONOLOGICAL TIMELINE (For the "What If" feature) ---
+    const timeline = [];
+    const monthOrder = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    monthOrder.forEach(m => {
+        const days = Object.keys(draftData[m]).map(Number).sort((a,b) => a - b);
+        days.forEach(d => {
+            timeline.push({ month: m, day: d, number: draftData[m][d] });
+        });
+    });
+
     // --- 4. MAIN APPLICATION FLOW ---
     function validateDate(month, day) {
         const daysInMonth = { "JAN":31, "FEB":29, "MAR":31, "APR":30, "MAY":31, "JUN":30, "JUL":31, "AUG":31, "SEP":30, "OCT":31, "NOV":30, "DEC":31 };
@@ -738,6 +774,26 @@
                     
                     document.getElementById('res-scenario').innerHTML = generateNarrative(false, draftNumber, null, null, null);
                 }
+
+                // Inject "What If" data for adjacent days
+                const currentIndex = timeline.findIndex(t => t.month === month && t.day === day);
+                const prevIndex = (currentIndex - 1 + 366) % 366; // wraps around to Dec 31 if Jan 1
+                const nextIndex = (currentIndex + 1) % 366;       // wraps around to Jan 1 if Dec 31
+                
+                const prevDay = timeline[prevIndex];
+                const nextDay = timeline[nextIndex];
+
+                document.getElementById('prev-date-text').innerText = `${prevDay.month} ${prevDay.day}`;
+                document.getElementById('prev-number-text').innerText = prevDay.number;
+                const prevStatusEl = document.getElementById('prev-status-text');
+                prevStatusEl.innerText = prevDay.number <= 195 ? "CALLED" : "NOT CALLED";
+                prevStatusEl.style.color = prevDay.number <= 195 ? "var(--stamp-red)" : "var(--stamp-green)";
+
+                document.getElementById('next-date-text').innerText = `${nextDay.month} ${nextDay.day}`;
+                document.getElementById('next-number-text').innerText = nextDay.number;
+                const nextStatusEl = document.getElementById('next-status-text');
+                nextStatusEl.innerText = nextDay.number <= 195 ? "CALLED" : "NOT CALLED";
+                nextStatusEl.style.color = nextDay.number <= 195 ? "var(--stamp-red)" : "var(--stamp-green)";
 
             }, 1200); // 1.2s delay for realism
         }, 1200); // 1.2s delay for realism
